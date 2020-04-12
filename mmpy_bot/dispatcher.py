@@ -109,6 +109,8 @@ class MessageDispatcher(object):
         msg = self.filter_text(msg)
         if self.is_mentioned(msg) or self.is_personal(msg):
             self._pool.add_task(('respond_to', msg))
+        elif msg['event'] in ['post_edited', 'post_deleted', 'reaction_added', 'reaction_removed']:
+            self._pool.add_task((msg['event'], msg))
         else:
             self._pool.add_task(('listen_to', msg))
 
@@ -128,7 +130,9 @@ class MessageDispatcher(object):
 
     def loop(self):
         for self.event in \
-            self._client.messages(True, ['posted', 'added_to_team',
+            self._client.messages(True, ['posted', 'post_edited', 'post_deleted',
+                                         'reaction_added', 'reaction_removed',
+                                         'added_to_team',
                                          'leave_team', 'user_added',
                                          'user_removed']):
             if self.event:

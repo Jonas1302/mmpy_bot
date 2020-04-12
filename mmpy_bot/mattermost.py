@@ -287,7 +287,8 @@ class MattermostClient(object):
                     if event_action not in filter_actions:
                         continue
 
-                    if event_action == 'posted':
+                    if event_action in ['posted', 'post_edited', 'post_deleted',
+                                        'reaction_added', 'reaction_removed']:
                         if post.get('data', {}).get('post'):
                             dp = json.loads(post['data']['post'])
                             if ignore_own_msg is True and dp.get("user_id"):

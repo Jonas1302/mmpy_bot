@@ -56,7 +56,11 @@ class Bot(object):
 class PluginsManager(object):
     commands = {
         'respond_to': {},
-        'listen_to': {}
+        'listen_to': {},
+        'post_edited': {},
+        'post_deleted': {},
+        'reaction_added': {},
+        'reaction_removed': {},
     }
 
     def __init__(self, plugins=None):
@@ -132,3 +136,19 @@ def respond_to(regexp, flags=0):
 
 def listen_to(regexp, flags=0):
     return get_wrapper('listen_to', regexp, flags)
+
+
+def post_edited(regexp, flags=0):
+    return get_wrapper('post_edited', regexp, flags)
+
+
+def post_deleted(regexp, flags=0):
+    return get_wrapper('post_deleted', regexp, flags)
+
+
+def reaction_added(regexp, flags=0):
+    return get_wrapper('reaction_added', regexp, flags)
+
+
+def reaction_removed(regexp, flags=0):
+    return get_wrapper('reaction_removed', regexp, flags)
