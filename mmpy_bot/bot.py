@@ -22,13 +22,13 @@ logger = logging.getLogger(__name__)
 
 class Bot(object):
     def __init__(self):
-        if settings.MATTERMOST_API_VERSION < 4:
+        if settings["MATTERMOST_API_VERSION"] < 4:
             raise ValueError('mmpy-bot only supports API Version 4+')
         self._client = MattermostClient(
-            settings.BOT_URL, settings.BOT_TEAM,
-            settings.BOT_LOGIN, settings.BOT_PASSWORD,
-            settings.SSL_VERIFY, settings.BOT_TOKEN,
-            settings.WS_ORIGIN)
+            settings["BOT_URL"], settings["BOT_TEAM"],
+            settings["BOT_LOGIN"], settings["BOT_PASSWORD"],
+            settings["SSL_VERIFY"], settings["BOT_TOKEN"],
+            settings["WS_ORIGIN"])
         logger.info('connected to mattermost')
         self._plugins = PluginsManager()
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
@@ -50,7 +50,7 @@ class Bot(object):
     def _run_jobs(self):
         logger.info('job running thread started')
         while True:
-            time.sleep(settings.JOB_TRIGGER_PERIOD)
+            time.sleep(settings["JOB_TRIGGER_PERIOD"])
             schedule.run_pending()
 
 
@@ -70,8 +70,8 @@ class PluginsManager(object):
 
     def init_plugins(self):
         if self.plugins == []:
-            if hasattr(settings, 'PLUGINS'):
-                self.plugins = settings.PLUGINS
+            if 'PLUGINS' in settings:
+                self.plugins = settings["PLUGINS"]
             if self.plugins == []:
                 self.plugins.append('mmpy_bot.plugins')
 

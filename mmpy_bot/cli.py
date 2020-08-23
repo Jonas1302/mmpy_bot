@@ -9,7 +9,7 @@ def main():
     logging.basicConfig(**{
         'format': '[%(asctime)s] %(message)s',
         'datefmt': '%m/%d/%Y %H:%M:%S',
-        'level': logging.DEBUG if settings.DEBUG else logging.INFO,
+        'level': logging.DEBUG if settings["DEBUG"] else logging.INFO,
         'stream': sys.stdout,
     })
 

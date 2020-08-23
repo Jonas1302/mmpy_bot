@@ -1,3 +1,5 @@
+from .settings import default_settings as settings
+
 VERSION = (1, 3, 4)
 
 

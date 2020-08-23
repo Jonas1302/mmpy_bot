@@ -16,14 +16,14 @@ from mmpy_bot import settings
 logger = logging.getLogger(__name__)
 
 MESSAGE_MATCHER = re.compile(r'^(@.*?\:?)\s(.*)', re.MULTILINE | re.DOTALL)
-BOT_ICON = settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None
-BOT_EMOJI = settings.BOT_EMOJI if hasattr(settings, 'BOT_EMOJI') else None
+BOT_ICON = settings.get("BOT_ICON")
+BOT_EMOJI = settings.get("BOT_EMOJI")
 
 
 class MessageDispatcher(object):
     def __init__(self, client, plugins):
         self._client = client
-        self._pool = WorkerPool(self.dispatch_msg, settings.WORKERS_NUM)
+        self._pool = WorkerPool(self.dispatch_msg, settings["WORKERS_NUM"])
         self._plugins = plugins
         self._channel_info = {}
         self.event = None
@@ -46,13 +46,13 @@ class MessageDispatcher(object):
         # ignore message containing specified item, such as "@all"
         msg = self.get_message(_msg)
         return True if any(
-            item in msg for item in settings.IGNORE_NOTIFIES) else False
+            item in msg for item in settings["IGNORE_NOTIFIES"]) else False
 
     def _ignore_sender(self, _msg):
         # ignore message from senders specified in settings
         sender_name = self.get_sender(_msg)
         return True if sender_name.lower() in (
-            name.lower() for name in settings.IGNORE_USERS) else False
+            name.lower() for name in settings["IGNORE_USERS"]) else False
 
     def is_mentioned(self, msg):
         mentions = msg.get('data', {}).get('mentions', [])
@@ -96,8 +96,8 @@ class MessageDispatcher(object):
                         msg['data']['post']['channel_id'], reply)
 
         if not responded and category == 'respond_to':
-            if settings.DEFAULT_REPLY_MODULE is not None:
-                mod = importlib.import_module(settings.DEFAULT_REPLY_MODULE)
+            if settings.get("DEFAULT_REPLY_MODULE") is not None:
+                mod = importlib.import_module(settings["DEFAULT_REPLY_MODULE"])
                 if hasattr(mod, 'default_reply'):
                     return getattr(mod, 'default_reply')(self, msg)
             self._default_reply(msg)
@@ -140,9 +140,9 @@ class MessageDispatcher(object):
                 self._on_new_message(self.event)
 
     def _default_reply(self, msg):
-        if settings.DEFAULT_REPLY:
+        if settings.get("DEFAULT_REPLY"):
             return self._client.channel_msg(
-                msg['data']['post']['channel_id'], settings.DEFAULT_REPLY)
+                msg['data']['post']['channel_id'], settings["DEFAULT_REPLY"])
 
         default_reply = [
             u'Bad command "%s", Here is what I currently know '
@@ -157,7 +157,7 @@ class MessageDispatcher(object):
                 modules[key] = []
             modules[key].append((p.regex.pattern, v.__doc__))
 
-        if settings.PLUGINS_ONLY_DOC_STRING:
+        if settings.get("PLUGINS_ONLY_DOC_STRING"):
             docs_fmt = u'\t{1}'
         else:
             docs_fmt = u'\t`{0}` - {1}'
@@ -249,14 +249,14 @@ class Message(object):
 
     @staticmethod
     def _get_webhook_url_by_id(hook_id):
-        base = '/'.join(settings.BOT_URL.split('/')[:3])
+        base = '/'.join(settings["BOT_URL"].split('/')[:3])
         return '%s/hooks/%s' % (base, hook_id)
 
     def reply_webapi(self, text, *args, **kwargs):
         self.send_webapi(self._gen_reply(text), *args, **kwargs)
 
     def send_webapi(self, text, attachments=None, channel_id=None, **kwargs):
-        webhook_id = kwargs.get('webhook_id', settings.WEBHOOK_ID)
+        webhook_id = kwargs.get('webhook_id', settings["WEBHOOK_ID"])
         if not webhook_id:
             logger.warning(
                 'send_webapi with webhook_id={}. message "{}" is not sent.'
