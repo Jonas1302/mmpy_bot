@@ -21,19 +21,17 @@ default_settings = {
 	
 	"DEFAULT_REPLY_MODULE": None,
 	"DEFAULT_REPLY": None,
-
-	"""
-	If you use Mattermost Web API to send messages (with send_webapi()
-	or reply_webapi()), you can customize the bot logo by providing Icon or Emoji.
-	If you use Mattermost API to send messages (with send() or reply()),
-	the used icon comes from bot settings and Icon or Emoji has no effect.
-	"""
+	
+	# If you use Mattermost Web API to send messages (with send_webapi()
+	# or reply_webapi()), you can customize the bot logo by providing Icon or Emoji.
+	# If you use Mattermost API to send messages (with send() or reply()),
+	# the used icon comes from bot settings and Icon or Emoji has no effect.
+	
 	# BOT_ICON = 'http://lorempixel.com/64/64/abstract/7/'
 	# BOT_EMOJI = ':godmode:'
 	
-	"""
-	Period to trigger jobs in sechduler. Measures in seconds.
-	If JOB_TRIGGER_PERIOD is not set, mmpy_bot will set default priod 5 seconds.
-	"""
+	
+	# Period to trigger jobs in sechduler. Measures in seconds.
+	# If JOB_TRIGGER_PERIOD is not set, mmpy_bot will set default priod 5 seconds.
 	"JOB_TRIGGER_PERIOD": 5
 }
