@@ -26,7 +26,7 @@ class Bot(object):
         if settings:
             self._settings.update(settings)
         
-        if settings["MATTERMOST_API_VERSION"] < 4:
+        if self._settings["MATTERMOST_API_VERSION"] < 4:
             raise ValueError('mmpy-bot only supports API Version 4+')
         self._client = MattermostClient(
             self._settings["BOT_URL"], self._settings["BOT_TEAM"],
