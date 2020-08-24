@@ -12,7 +12,7 @@ from glob import glob
 
 from six.moves import _thread
 
-from mmpy_bot import settings
+from mmpy_bot.settings import default_settings
 from mmpy_bot.dispatcher import MessageDispatcher
 from mmpy_bot.mattermost import MattermostClient
 from mmpy_bot.scheduler import schedule
@@ -21,17 +21,21 @@ logger = logging.getLogger(__name__)
 
 
 class Bot(object):
-    def __init__(self):
+    def __init__(self, settings=None):
+        self._settings = default_settings
+        if settings:
+            self._settings.update(settings)
+        
         if settings["MATTERMOST_API_VERSION"] < 4:
             raise ValueError('mmpy-bot only supports API Version 4+')
         self._client = MattermostClient(
-            settings["BOT_URL"], settings["BOT_TEAM"],
-            settings["BOT_LOGIN"], settings["BOT_PASSWORD"],
-            settings["SSL_VERIFY"], settings["BOT_TOKEN"],
-            settings["WS_ORIGIN"])
+            self._settings["BOT_URL"], self._settings["BOT_TEAM"],
+            self._settings["BOT_LOGIN"], self._settings["BOT_PASSWORD"],
+            self._settings["SSL_VERIFY"], self._settings["BOT_TOKEN"],
+            self._settings["WS_ORIGIN"])
         logger.info('connected to mattermost')
         self._plugins = PluginsManager()
-        self._dispatcher = MessageDispatcher(self._client, self._plugins)
+        self._dispatcher = MessageDispatcher(self._client, self._plugins, self._settings)
 
     def run(self):
         self._plugins.init_plugins()
@@ -50,7 +54,7 @@ class Bot(object):
     def _run_jobs(self):
         logger.info('job running thread started')
         while True:
-            time.sleep(settings["JOB_TRIGGER_PERIOD"])
+            time.sleep(self._settings["JOB_TRIGGER_PERIOD"])
             schedule.run_pending()
 
 
@@ -70,8 +74,8 @@ class PluginsManager(object):
 
     def init_plugins(self):
         if self.plugins == []:
-            if 'PLUGINS' in settings:
-                self.plugins = settings["PLUGINS"]
+            if 'PLUGINS' in self._settings:
+                self.plugins = self._settings["PLUGINS"]
             if self.plugins == []:
                 self.plugins.append('mmpy_bot.plugins')
 

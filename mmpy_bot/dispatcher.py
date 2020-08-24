@@ -21,9 +21,10 @@ BOT_EMOJI = settings.get("BOT_EMOJI")
 
 
 class MessageDispatcher(object):
-    def __init__(self, client, plugins):
+    def __init__(self, client, plugins, settings):
+        self._settings = settings
         self._client = client
-        self._pool = WorkerPool(self.dispatch_msg, settings["WORKERS_NUM"])
+        self._pool = WorkerPool(self.dispatch_msg, self._settings["WORKERS_NUM"])
         self._plugins = plugins
         self._channel_info = {}
         self.event = None
@@ -46,13 +47,13 @@ class MessageDispatcher(object):
         # ignore message containing specified item, such as "@all"
         msg = self.get_message(_msg)
         return True if any(
-            item in msg for item in settings["IGNORE_NOTIFIES"]) else False
+            item in msg for item in self._settings["IGNORE_NOTIFIES"]) else False
 
     def _ignore_sender(self, _msg):
         # ignore message from senders specified in settings
         sender_name = self.get_sender(_msg)
         return True if sender_name.lower() in (
-            name.lower() for name in settings["IGNORE_USERS"]) else False
+            name.lower() for name in self._settings["IGNORE_USERS"]) else False
 
     def is_mentioned(self, msg):
         mentions = msg.get('data', {}).get('mentions', [])
@@ -96,8 +97,8 @@ class MessageDispatcher(object):
                         msg['data']['post']['channel_id'], reply)
 
         if not responded and category == 'respond_to':
-            if settings.get("DEFAULT_REPLY_MODULE") is not None:
-                mod = importlib.import_module(settings["DEFAULT_REPLY_MODULE"])
+            if self._settings.get("DEFAULT_REPLY_MODULE") is not None:
+                mod = importlib.import_module(self._settings["DEFAULT_REPLY_MODULE"])
                 if hasattr(mod, 'default_reply'):
                     return getattr(mod, 'default_reply')(self, msg)
             self._default_reply(msg)
@@ -140,9 +141,9 @@ class MessageDispatcher(object):
                 self._on_new_message(self.event)
 
     def _default_reply(self, msg):
-        if settings.get("DEFAULT_REPLY"):
+        if self._settings.get("DEFAULT_REPLY"):
             return self._client.channel_msg(
-                msg['data']['post']['channel_id'], settings["DEFAULT_REPLY"])
+                msg['data']['post']['channel_id'], self._settings["DEFAULT_REPLY"])
 
         default_reply = [
             u'Bad command "%s", Here is what I currently know '
@@ -157,7 +158,7 @@ class MessageDispatcher(object):
                 modules[key] = []
             modules[key].append((p.regex.pattern, v.__doc__))
 
-        if settings.get("PLUGINS_ONLY_DOC_STRING"):
+        if self._settings.get("PLUGINS_ONLY_DOC_STRING"):
             docs_fmt = u'\t{1}'
         else:
             docs_fmt = u'\t`{0}` - {1}'
@@ -246,32 +247,6 @@ class Message(object):
 
     def _get_sender_name(self):
         return self._body['data'].get('sender_name', '').strip().strip('@')
-
-    @staticmethod
-    def _get_webhook_url_by_id(hook_id):
-        base = '/'.join(settings["BOT_URL"].split('/')[:3])
-        return '%s/hooks/%s' % (base, hook_id)
-
-    def reply_webapi(self, text, *args, **kwargs):
-        self.send_webapi(self._gen_reply(text), *args, **kwargs)
-
-    def send_webapi(self, text, attachments=None, channel_id=None, **kwargs):
-        webhook_id = kwargs.get('webhook_id', settings["WEBHOOK_ID"])
-        if not webhook_id:
-            logger.warning(
-                'send_webapi with webhook_id={}. message "{}" is not sent.'
-                .format(webhook_id, text)
-            )
-            return
-        url = self._get_webhook_url_by_id(webhook_id)
-        kwargs['username'] = kwargs.get(
-            'username', self.get_username(self._client.user['id']))
-        kwargs['icon_url'] = kwargs.get('icon_url', BOT_ICON)
-        kwargs['icon_emoji'] = kwargs.get('icon_emoji', BOT_EMOJI)
-        self._client.api.in_webhook(
-            url, self.get_channel_name(channel_id), text,
-            attachments=attachments, ssl_verify=self._client.api.ssl_verify,
-            **kwargs)
 
     def reply(self, text, files=None, props=None):
         return self.send(self._gen_reply(text), files=files, props=props or {})
