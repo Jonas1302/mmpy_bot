@@ -16,8 +16,8 @@ from mmpy_bot import settings
 logger = logging.getLogger(__name__)
 
 MESSAGE_MATCHER = re.compile(r'^(@.*?\:?)\s(.*)', re.MULTILINE | re.DOTALL)
-BOT_ICON = settings.get("BOT_ICON")
-BOT_EMOJI = settings.get("BOT_EMOJI")
+BOT_ICON = None
+BOT_EMOJI = None
 
 
 class MessageDispatcher(object):
