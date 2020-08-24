@@ -116,11 +116,13 @@ class MessageDispatcher(object):
             self._pool.add_task(('listen_to', msg))
 
     def filter_text(self, msg):
+        """ This will also remove the first tagged user in a direct channnel
         text = self.get_message(msg)
         if self.is_mentioned(msg):
             m = MESSAGE_MATCHER.match(text)
             if m:
                 msg['data']['post']['message'] = m.group(2).strip()
+        """
         return msg
 
     def load_json(self):
