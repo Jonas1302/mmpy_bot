@@ -38,7 +38,7 @@ class Bot(object):
         self._dispatcher = MessageDispatcher(self._client, self._plugins, self._settings)
 
     def run(self):
-        self._plugins.init_plugins()
+        self._plugins.init_plugins(self._settings)
         self._plugins.trigger_at_start(self._client)
         self._dispatcher.start()
         _thread.start_new_thread(self._keep_active, tuple())
@@ -72,10 +72,10 @@ class PluginsManager(object):
     def __init__(self, plugins=None):
         self.plugins = plugins or []
 
-    def init_plugins(self):
+    def init_plugins(self, settings):
         if self.plugins == []:
-            if 'PLUGINS' in self._settings:
-                self.plugins = self._settings["PLUGINS"]
+            if 'PLUGINS' in settings:
+                self.plugins = settings["PLUGINS"]
             if self.plugins == []:
                 self.plugins.append('mmpy_bot.plugins')
 
